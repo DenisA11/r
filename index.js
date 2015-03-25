@@ -1,29 +1,21 @@
-var fs = require('fs');
+var glob = require("glob");
+var fs = require("fs");
+var argv = require('minimist')(process.argv.slice(2));
 
-var i = 'laundry';
-var o = 'shmaundry';
-var path = './basket';
-var dirs = [];
-readAllandRename(path,i,o);
 
-function readAllandRename(dir, input, output){
-    var stats = fs.statSync(dir);
-    if(stats.isDirectory()){
-        fs.readdir(dir, function(err, result){
-            if(err) throw err;
-            result.forEach(function(res){
-                dirs.push(res);
-                readAllandRename(dir + '/' + res, input, output);
+var dir = argv.folder || '**/*';
+var findText = argv.findText;
+var replaceText = argv.replaceText;
+
+
+glob(dir, function (er, files) {
+    files.forEach(function(file){
+        if(file.indexOf(findText) > -1 && findText && replaceText){
+            var newText = file.replace(findText, replaceText);
+            fs.rename(file, newText , function(err){
+                if(err) throw err;
+                console.log(newText);
             })
-        });
-    } else {
-        if(dir.indexOf(input) > -1){
-            var out = dir.replace(input, output);
-            fs.rename(dir, out, function (err) {
-                if (err) throw err;
-                console.log('renamed started', dir);
-                console.log('renamed complete', out);
-            });
         }
-    }
-}
+    })
+});
